@@ -1,0 +1,1061 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HydroPulse IoT - Residential Node Multi-Meter</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-center">
+
+  <div id="auth-section" class="w-full max-w-md mx-auto p-6">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
+      <div class="text-center mb-6">
+        <h1 class="text-2xl font-bold tracking-wide text-cyan-400">HydroPulse IoT</h1>
+        <p class="text-xs text-slate-400 mt-1">Smart Residential Multi-Node Telemetry</p>
+      </div>
+
+      <div class="flex border-b border-slate-800 mb-6 text-sm">
+        <button id="tab-login" type="button" onclick="switchAuthTab('login')"
+          class="flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400">Sign In</button>
+        <button id="tab-action" type="button" onclick="switchAuthTab('register')"
+          class="flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300">Register
+          User ID</button>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs text-slate-400 mb-1">User ID</label>
+          <input id="auth-userid" type="text" autocomplete="off" placeholder="Enter User ID"
+            onkeydown="handleAuthEnterKey(event)"
+            class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
+        </div>
+
+        <div id="pin-container" class="hidden">
+          <label class="block text-xs text-slate-400 mb-1">4-Digit Security / Recovery PIN</label>
+          <input id="auth-pin" type="password" autocomplete="off" maxlength="6" placeholder="e.g. 1234"
+            onkeydown="handleAuthEnterKey(event)"
+            class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
+        </div>
+
+        <div>
+          <label id="pwd-label" class="block text-xs text-slate-400 mb-1">Password</label>
+          <div class="relative flex items-center">
+            <input id="auth-password" type="password" autocomplete="new-password" placeholder="Enter Password"
+              onkeydown="handleAuthEnterKey(event)"
+              class="w-full bg-slate-950 border border-slate-800 rounded px-3 py-2 pr-10 text-sm text-white focus:outline-none focus:border-cyan-500" />
+            <button type="button" onclick="togglePasswordVisibility()"
+              class="absolute right-2.5 p-1 text-slate-400 hover:text-cyan-400 focus:outline-none transition"
+              title="Show/Hide Password">
+              <i id="eye-icon" data-lucide="eye" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <button id="auth-submit-btn" type="button" onclick="handleAuthSubmit()"
+          class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-2 rounded text-sm transition shadow mt-2 flex justify-center items-center gap-2">
+          <span id="btn-text">Sign In</span>
+          <span id="btn-spinner"
+            class="hidden w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+        </button>
+
+        <div id="forgot-link-container" class="text-right">
+          <button type="button" onclick="switchAuthTab('reset')"
+            class="text-[11px] text-cyan-400/80 hover:text-cyan-300 transition">Forgot Password?</button>
+        </div>
+
+        <p id="auth-msg" class="text-xs text-center min-h-[1.25rem]"></p>
+      </div>
+    </div>
+  </div>
+
+  <div id="dashboard-section" class="hidden min-h-screen p-6 md:p-10 w-full flex-col justify-start">
+
+    <header
+      class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-slate-800 pb-5 gap-4">
+      <div class="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div>
+          <h1 class="text-2xl font-bold tracking-wide text-cyan-400">HydroPulse IoT</h1>
+          <p class="text-xs text-slate-400">Residence ID: <span id="user-display"
+              class="text-emerald-400 font-mono font-bold"></span></p>
+        </div>
+
+        <div class="bg-cyan-950/40 border border-cyan-500/30 px-4 py-2 rounded-xl flex items-center gap-3">
+          <div class="p-2 bg-cyan-500/10 rounded-lg text-cyan-400">
+            <i data-lucide="gauge" class="w-5 h-5"></i>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-semibold text-slate-400 tracking-wider block">Total Household
+              Usage</span>
+            <span class="text-lg font-black text-cyan-300 font-mono"><span id="global-total-usage">0.00</span> <span
+                class="text-xs text-slate-400 font-normal">Liters</span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap items-center gap-3">
+
+        <div class="flex items-center gap-1.5 bg-slate-900 border border-slate-700 p-1 rounded-lg">
+          <div class="flex items-center gap-2 pl-2">
+            <i data-lucide="map-pin" class="w-3.5 h-3.5 text-cyan-400"></i>
+            <span class="text-xs text-slate-400 font-medium">Node:</span>
+            <select id="node-selector" onchange="handleNodeChange()"
+              class="bg-transparent text-xs font-semibold text-white focus:outline-none cursor-pointer pr-2">
+            </select>
+          </div>
+
+          <button onclick="openNodeModal()" title="Add or Edit Nodes"
+            class="p-1.5 rounded hover:bg-slate-800 text-slate-400 hover:text-cyan-400 border-l border-slate-800 transition">
+            <i data-lucide="settings" class="w-3.5 h-3.5"></i>
+          </button>
+        </div>
+
+        <button onclick="fetchNodeTelemetry()"
+          class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-2 rounded text-cyan-400 border border-slate-700 font-medium transition shadow flex items-center gap-1.5">
+          <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh
+        </button>
+
+        <div class="relative inline-block text-left">
+          <button type="button" onclick="toggleMockDropdown(event)"
+            class="bg-cyan-600 hover:bg-cyan-500 text-xs px-3 py-2 rounded text-white font-medium transition shadow flex items-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i>
+            <span>Inject Mock</span>
+            <i data-lucide="chevron-down" class="w-3.5 h-3.5 ml-0.5"></i>
+          </button>
+
+          <div id="mock-dropdown-menu"
+            class="hidden absolute right-0 mt-2 w-52 rounded-lg bg-slate-900 border border-slate-800 shadow-2xl z-50 py-1.5">
+            <button type="button" onclick="insertSimulatedTelemetry('normal')"
+              class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Normal Flow (5–8 L/min)
+            </button>
+            <button type="button" onclick="insertSimulatedTelemetry('leak')"
+              class="w-full text-left px-4 py-2 text-xs text-rose-300 hover:bg-slate-800 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-rose-400"></span> Micro-Leak (0.6–1.0 L/min)
+            </button>
+            <button type="button" onclick="insertSimulatedTelemetry('burst')"
+              class="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-slate-800 flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-500"></span> Pipe Burst (22+ L/min)
+            </button>
+          </div>
+        </div>
+
+        <button onclick="handleSignOut()"
+          class="bg-rose-950/60 hover:bg-rose-900 border border-rose-800 text-rose-300 text-xs px-3 py-2 rounded font-medium transition shadow flex items-center gap-1.5">
+          <i data-lucide="log-out" class="w-4 h-4"></i> Sign Out
+        </button>
+      </div>
+    </header>
+
+    <div id="inactive-node-banner"
+      class="hidden mb-8 p-6 bg-slate-900 border border-dashed border-slate-700 rounded-2xl text-center">
+      <div class="inline-flex p-3 bg-slate-800/80 rounded-full text-slate-400 mb-2">
+        <i data-lucide="radio-off" class="w-6 h-6"></i>
+      </div>
+      <h3 class="text-base font-semibold text-slate-200">No Telemetry Recorded for this Node</h3>
+      <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">This node is currently offline or waiting for its first
+        telemetry transmission from the hardware module.</p>
+    </div>
+
+    <div id="active-telemetry-container">
+
+      <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-8">
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow flex flex-col justify-between">
+          <div class="flex justify-between items-center text-slate-400 mb-2">
+            <span class="text-sm font-medium">Active Node</span>
+            <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i>
+          </div>
+          <!-- NEW VERSION: Friendly label is large, technical ID is subtle -->
+          <div>
+            <div id="metric-node-name" class="text-xl font-black text-cyan-400 tracking-wide truncate">
+              Main Water Inlet
+            </div>
+            <span id="metric-node-id" class="text-xs text-slate-400 font-mono block mt-0.5 truncate">
+              node_main
+            </span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow">
+          <div class="flex justify-between items-center text-slate-400 mb-2">
+            <span class="text-sm font-medium">Total Volume</span>
+            <i data-lucide="droplets" class="w-5 h-5 text-blue-400"></i>
+          </div>
+          <div class="text-2xl font-extrabold text-white">
+            <span id="metric-volume">0.00</span> <span class="text-sm text-slate-400 font-normal">Liters</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow">
+          <div class="flex justify-between items-center text-slate-400 mb-2">
+            <span class="text-sm font-medium">Daily Consumption</span>
+            <i data-lucide="calendar" class="w-5 h-5 text-teal-400"></i>
+          </div>
+          <div class="text-2xl font-extrabold text-white">
+            <span id="metric-daily">0.00</span> <span class="text-sm text-slate-400 font-normal">Liters</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow">
+          <div class="flex justify-between items-center text-slate-400 mb-2">
+            <span class="text-sm font-medium">Monthly Consumption</span>
+            <i data-lucide="calendar-range" class="w-5 h-5 text-indigo-400"></i>
+          </div>
+          <div class="text-2xl font-extrabold text-white">
+            <span id="metric-monthly">0.00</span> <span class="text-sm text-slate-400 font-normal">Liters</span>
+          </div>
+        </div>
+
+        <div id="status-card" class="bg-slate-900 border border-slate-800 p-5 rounded-xl shadow transition">
+          <div class="flex justify-between items-center text-slate-400 mb-2">
+            <span class="text-sm font-medium">Pipe Health</span>
+            <i id="status-icon" data-lucide="shield-check" class="w-5 h-5 text-emerald-400"></i>
+          </div>
+          <div id="status-text" class="text-base font-bold text-emerald-400 mt-1">Normal Operation</div>
+        </div>
+
+      </section>
+
+      <section class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+
+        <div class="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-xl shadow">
+          <div class="flex justify-between items-center mb-4">
+            <div>
+              <h2 class="text-lg font-semibold text-slate-200">Flow Telemetry Stream (<span id="chart-node-label"
+                  class="text-cyan-400 font-mono">node_main</span>)</h2>
+              <span id="record-count-label" class="text-xs text-slate-500">Live stream via Supabase</span>
+            </div>
+            <div
+              class="flex items-center gap-1.5 text-xs text-emerald-400 bg-emerald-950/40 px-2.5 py-1 rounded-full border border-emerald-500/20">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span> Streaming
+            </div>
+          </div>
+          <div class="h-64 w-full">
+            <canvas id="flowChart"></canvas>
+          </div>
+        </div>
+
+        <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow flex flex-col justify-between">
+          <div>
+            <h2 class="text-lg font-semibold text-slate-200 mb-3">Pipe Calibration</h2>
+
+            <div class="mb-4">
+              <label class="block text-xs text-slate-400 mb-1">Records to Query</label>
+              <select id="fetch-limit" onchange="fetchNodeTelemetry()"
+                class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500">
+                <option value="10">Last 10 Records</option>
+                <option value="25">Last 25 Records</option>
+                <option value="50">Last 50 Records</option>
+              </select>
+            </div>
+
+            <div class="border-t border-slate-800 pt-3">
+              <label class="block text-xs text-slate-400 mb-1">K-Factor Calibration (Pulses / Liter)</label>
+              <input id="input-kfactor" type="number" value="450" onchange="updateKFactor()"
+                class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500" />
+            </div>
+          </div>
+
+          <div class="text-[11px] text-slate-500 mt-4 border-t border-slate-800/60 pt-2 flex justify-between">
+            <span>Stream ID: <strong id="latest-row-id" class="text-slate-300 font-mono">None</strong></span>
+            <span id="fetch-status" class="text-cyan-400 font-medium">Ready</span>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+  </div>
+
+  <div id="node-modal"
+    class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
+      <div class="flex justify-between items-center pb-3 border-b border-slate-800 mb-4">
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i data-lucide="cpu" class="w-4 h-4 text-cyan-400"></i> Configure Residential Nodes
+        </h3>
+        <button onclick="closeNodeModal()" class="text-slate-400 hover:text-white"><i data-lucide="x"
+            class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="bg-slate-950/60 border border-slate-800 p-4 rounded-xl mb-4">
+        <h4 class="text-xs font-semibold text-cyan-400 uppercase tracking-wider mb-2">Add New Hardware Node</h4>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-2">
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Node ID (e.g. node_garden)</label>
+            <input id="new-node-id" type="text" placeholder="node_identifier"
+              class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500 font-mono" />
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 mb-1">Display Name (e.g. Garden Tap)</label>
+            <input id="new-node-label" type="text" placeholder="Location Name"
+              class="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-cyan-500" />
+          </div>
+        </div>
+        <button onclick="addNewNode()"
+          class="w-full bg-cyan-600 hover:bg-cyan-500 text-white font-medium py-1.5 rounded text-xs transition">
+          Add Pipe Node
+        </button>
+      </div>
+
+      <div>
+        <h4 class="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Active Pipe Modules</h4>
+        <div id="nodes-list-container" class="space-y-2 max-h-48 overflow-y-auto pr-1">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    // 1. Supabase Initialization (Add your project keys)
+    const SUPABASE_URL = 'https://eawyhrrthyglkgsnqxev.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_bEAaYFSF3yab8K3r0Jrq0Q_moyAloA2';
+
+    const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: true, autoRefreshToken: true }
+    });
+
+    let currentAuthMode = 'login';
+    let currentUser = null;
+    let currentRawUserId = '';
+    let selectedNode = 'node_main';
+    let userNodes = [];
+    let K_FACTOR = 450;
+    let nodeVolumeAccumulated = 0;
+    let dailyVolumeAccumulated = 0;
+    let monthlyVolumeAccumulated = 0;
+    let realtimeChannel = null;
+
+    function resetAuthForm() {
+      const u = document.getElementById('auth-userid');
+      const p = document.getElementById('auth-password');
+      const pin = document.getElementById('auth-pin');
+      const msg = document.getElementById('auth-msg');
+      const eye = document.getElementById('eye-icon');
+      if (u) u.value = '';
+      if (p) {
+        p.value = '';
+        p.type = 'password';
+      }
+      if (pin) pin.value = '';
+      if (eye) eye.setAttribute('data-lucide', 'eye');
+      if (msg) {
+        msg.textContent = '';
+        msg.className = 'text-xs text-center min-h-[1.25rem]';
+      }
+      lucide.createIcons();
+    }
+
+    function formatAuthIdentifier(userId) {
+      const cleanId = userId.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      return `${cleanId}@hydropulse.local`;
+    }
+
+    // Toggle password visibility
+    function togglePasswordVisibility() {
+      const pwdInput = document.getElementById('auth-password');
+      const eyeIcon = document.getElementById('eye-icon');
+
+      if (pwdInput.type === 'password') {
+        pwdInput.type = 'text';
+        eyeIcon.setAttribute('data-lucide', 'eye-off');
+      } else {
+        pwdInput.type = 'password';
+        eyeIcon.setAttribute('data-lucide', 'eye');
+      }
+      lucide.createIcons();
+    }
+
+    // Enter Key Listener to trigger Auth Submit
+    function handleAuthEnterKey(event) {
+      if (event.key === 'Enter') {
+        event.preventDefault();
+        handleAuthSubmit();
+      }
+    }
+
+    // 2. Chart.js Setup
+    const ctx = document.getElementById('flowChart').getContext('2d');
+    const chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: [],
+        datasets: [{
+          label: 'Flow Rate (L/min)',
+          data: [],
+          borderColor: '#22d3ee',
+          backgroundColor: 'rgba(34, 211, 238, 0.1)',
+          borderWidth: 2,
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+          y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' }, beginAtZero: true }
+        },
+        plugins: { legend: { display: false } }
+      }
+    });
+
+    // 3. Tab Switching
+    function switchAuthTab(mode) {
+      resetAuthForm();
+      currentAuthMode = mode;
+      const loginTab = document.getElementById('tab-login');
+      const actionTab = document.getElementById('tab-action');
+      const pinContainer = document.getElementById('pin-container');
+      const forgotLink = document.getElementById('forgot-link-container');
+      const pwdLabel = document.getElementById('pwd-label');
+      const btnText = document.getElementById('btn-text');
+
+      if (mode === 'login') {
+        loginTab.className = "flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400";
+        actionTab.className = "flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300";
+        actionTab.textContent = "Register House ID";
+        actionTab.setAttribute("onclick", "switchAuthTab('register')");
+        pinContainer.classList.add('hidden');
+        forgotLink.classList.remove('hidden');
+        pwdLabel.textContent = "Password";
+        btnText.textContent = "Sign In";
+      } else if (mode === 'register') {
+        actionTab.className = "flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400";
+        loginTab.className = "flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300";
+        actionTab.textContent = "Register House ID";
+        actionTab.setAttribute("onclick", "switchAuthTab('register')");
+        pinContainer.classList.remove('hidden');
+        forgotLink.classList.add('hidden');
+        pwdLabel.textContent = "Set Password";
+        btnText.textContent = "Register House ID";
+      } else if (mode === 'reset') {
+        actionTab.className = "flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400";
+        loginTab.className = "flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300";
+        actionTab.textContent = "Reset Password";
+        actionTab.setAttribute("onclick", "switchAuthTab('reset')");
+        pinContainer.classList.remove('hidden');
+        forgotLink.classList.add('hidden');
+        pwdLabel.textContent = "Enter New Password";
+        btnText.textContent = "Update Password";
+      }
+    }
+
+    // 4. Handle Auth Submissions
+    async function handleAuthSubmit() {
+      const rawUserId = document.getElementById('auth-userid').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const pin = document.getElementById('auth-pin').value.trim();
+      const msg = document.getElementById('auth-msg');
+      const btnSpinner = document.getElementById('btn-spinner');
+      const submitBtn = document.getElementById('auth-submit-btn');
+
+      if (!rawUserId || !password) {
+        msg.className = "text-xs text-center text-rose-400";
+        msg.textContent = "Please enter House ID and Password.";
+        return;
+      }
+
+      const internalEmail = formatAuthIdentifier(rawUserId);
+      submitBtn.disabled = true;
+      btnSpinner.classList.remove('hidden');
+      msg.className = "text-xs text-center text-slate-400";
+      msg.textContent = "Processing...";
+
+      try {
+        if (currentAuthMode === 'register') {
+          if (!pin) throw new Error("Please provide a 4-digit Recovery PIN.");
+
+          const { data, error } = await supabaseClient.auth.signUp({
+            email: internalEmail,
+            password: password,
+            options: {
+              data: {
+                custom_username: rawUserId,
+                recovery_pin: pin
+              }
+            }
+          });
+          if (error) throw error;
+
+          await supabaseClient.from('user_profiles').upsert([
+            { id: data.user.id, custom_username: rawUserId, recovery_pin: pin }
+          ]);
+
+          // Seed default household nodes
+          await supabaseClient.from('house_nodes').insert([
+            { user_id: data.user.id, node_id: 'node_main', node_label: 'Main Water Inlet' },
+            { user_id: data.user.id, node_id: 'node_kitchen', node_label: 'Kitchen Tap' },
+            { user_id: data.user.id, node_id: 'node_bathroom', node_label: 'Bathroom Shower' }
+          ]);
+
+          resetAuthForm();
+          msg.className = "text-xs text-center text-emerald-400 font-medium";
+          msg.textContent = `House ID "${rawUserId}" registered! Click Sign In.`;
+
+        } else if (currentAuthMode === 'login') {
+          const { data, error } = await supabaseClient.auth.signInWithPassword({
+            email: internalEmail,
+            password: password
+          });
+          if (error) throw error;
+
+          currentUser = data.user;
+          currentRawUserId = rawUserId;
+          msg.textContent = "";
+          await renderAuthenticatedView();
+
+        } else if (currentAuthMode === 'reset') {
+          if (!pin) throw new Error("Please enter your Recovery PIN.");
+
+          const { data: success, error: rpcErr } = await supabaseClient.rpc('reset_password_with_pin', {
+            p_username: rawUserId,
+            p_pin: pin,
+            p_new_password: password
+          });
+
+          if (rpcErr || !success) throw new Error("Invalid House ID or Recovery PIN.");
+
+          resetAuthForm();
+          msg.className = "text-xs text-center text-emerald-400 font-medium";
+          msg.textContent = "Password updated! Please click Sign In.";
+        }
+      } catch (err) {
+        msg.className = "text-xs text-center text-rose-400";
+        msg.textContent = err.message || "Authentication failed.";
+      } finally {
+        submitBtn.disabled = false;
+        btnSpinner.classList.add('hidden');
+      }
+    }
+
+    // 5. Sign Out
+    async function handleSignOut() {
+      await supabaseClient.auth.signOut();
+      currentUser = null;
+      currentRawUserId = '';
+      if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+
+      resetAuthForm();
+      document.getElementById('dashboard-section').classList.add('hidden');
+      document.getElementById('auth-section').classList.remove('hidden');
+      switchAuthTab('login');
+    }
+
+    // 6. Transition to Authenticated View
+    async function renderAuthenticatedView() {
+      document.getElementById('auth-section').classList.add('hidden');
+      document.getElementById('dashboard-section').classList.remove('hidden');
+
+      if (!currentRawUserId) {
+        const { data: profile } = await supabaseClient
+          .from('user_profiles')
+          .select('custom_username')
+          .eq('id', currentUser.id)
+          .single();
+
+        currentRawUserId = profile?.custom_username || currentUser.user_metadata?.custom_username || currentUser.email.split('@')[0];
+      }
+
+      document.getElementById('user-display').textContent = currentRawUserId;
+
+      await loadHouseholdNodes();
+      fetchGlobalHouseUsage();
+      fetchNodeTelemetry();
+      subscribeToRealtime();
+    }
+
+    // 7. Node Management
+    async function loadHouseholdNodes() {
+      if (!currentUser) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('house_nodes')
+          .select('*')
+          .eq('user_id', currentUser.id)
+          .order('id', { ascending: true });
+
+        if (error) throw error;
+
+        if (!data || data.length === 0) {
+          const defaultNodes = [
+            { user_id: currentUser.id, node_id: 'node_main', node_label: 'Main Water Inlet' },
+            { user_id: currentUser.id, node_id: 'node_kitchen', node_label: 'Kitchen Tap' },
+            { user_id: currentUser.id, node_id: 'node_bathroom', node_label: 'Bathroom Shower' }
+          ];
+          const { data: seeded } = await supabaseClient.from('house_nodes').insert(defaultNodes).select();
+          userNodes = seeded || defaultNodes;
+        } else {
+          userNodes = data;
+        }
+
+        renderNodeDropdown();
+      } catch (err) {
+        console.error("Failed to load nodes:", err);
+      }
+    }
+
+    function renderNodeDropdown() {
+      const selector = document.getElementById('node-selector');
+      selector.innerHTML = '';
+
+      userNodes.forEach(node => {
+        const opt = document.createElement('option');
+        opt.value = node.node_id;
+        opt.textContent = `${node.node_label} (${node.node_id})`;
+        opt.className = 'bg-slate-900 text-white';
+        if (node.node_id === selectedNode) opt.selected = true;
+        selector.appendChild(opt);
+      });
+
+      if (!userNodes.some(n => n.node_id === selectedNode) && userNodes.length > 0) {
+        selectedNode = userNodes[0].node_id;
+        selector.value = selectedNode;
+      }
+
+      updateSelectedNodeDisplay();
+    }
+
+    // NEW VERSION
+      function updateSelectedNodeDisplay() {
+      const nodeObj = userNodes.find(n => n.node_id === selectedNode);
+      const friendlyName = nodeObj ? nodeObj.node_label : selectedNode;
+
+      // Shows friendly name on the card and in the chart title
+      document.getElementById('metric-node-name').textContent = friendlyName;
+      document.getElementById('metric-node-id').textContent = selectedNode;
+      document.getElementById('chart-node-label').textContent = friendlyName;
+    }
+
+    function openNodeModal() {
+      renderModalNodesList();
+      document.getElementById('node-modal').classList.remove('hidden');
+      lucide.createIcons();
+    }
+
+    function closeNodeModal() {
+      document.getElementById('node-modal').classList.add('hidden');
+    }
+
+    function renderModalNodesList() {
+      const container = document.getElementById('nodes-list-container');
+      container.innerHTML = '';
+
+      userNodes.forEach(node => {
+        const row = document.createElement('div');
+        row.className = "flex items-center justify-between gap-2 p-2 bg-slate-900 border border-slate-800 rounded-lg text-xs";
+
+        row.innerHTML = `
+          <div class="flex-1">
+            <span class="font-mono text-cyan-400 block">${node.node_id}</span>
+            <input id="edit-label-${node.id}" type="text" value="${node.node_label}" class="bg-slate-950 border border-slate-700 rounded px-2 py-0.5 text-xs text-white focus:outline-none focus:border-cyan-500 w-full mt-1" />
+          </div>
+          <div class="flex items-center gap-1.5 pt-4">
+            <button onclick="saveNodeEdit(${node.id})" title="Save Name" class="p-1 rounded bg-slate-800 hover:bg-slate-700 text-emerald-400 transition"><i data-lucide="save" class="w-3.5 h-3.5"></i></button>
+            <button onclick="deleteNode(${node.id}, '${node.node_id}')" title="Delete Node" class="p-1 rounded bg-slate-800 hover:bg-rose-950 text-rose-400 transition"><i data-lucide="trash-2" class="w-3.5 h-3.5"></i></button>
+          </div>
+        `;
+        container.appendChild(row);
+      });
+      lucide.createIcons();
+    }
+
+    async function addNewNode() {
+      const idInput = document.getElementById('new-node-id');
+      const labelInput = document.getElementById('new-node-label');
+      const cleanId = idInput.value.trim().toLowerCase().replace(/[^a-z0-9_-]/g, '');
+      const label = labelInput.value.trim() || cleanId;
+
+      if (!cleanId) {
+        alert("Please enter a valid Node ID.");
+        return;
+      }
+
+      const { error } = await supabaseClient.from('house_nodes').insert([
+        { user_id: currentUser.id, node_id: cleanId, node_label: label }
+      ]);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      idInput.value = '';
+      labelInput.value = '';
+      await loadHouseholdNodes();
+      renderModalNodesList();
+    }
+
+    async function saveNodeEdit(recordId) {
+      const updatedLabel = document.getElementById(`edit-label-${recordId}`).value.trim();
+      if (!updatedLabel) return;
+
+      const { error } = await supabaseClient
+        .from('house_nodes')
+        .update({ node_label: updatedLabel })
+        .eq('id', recordId)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      await loadHouseholdNodes();
+      renderModalNodesList();
+    }
+
+    async function deleteNode(recordId, nodeId) {
+      if (userNodes.length <= 1) {
+        alert("At least one node must remain in your household.");
+        return;
+      }
+
+      if (!confirm(`Delete node "${nodeId}"? Previous telemetry records will remain stored in database.`)) return;
+
+      const { error } = await supabaseClient
+        .from('house_nodes')
+        .delete()
+        .eq('id', recordId)
+        .eq('user_id', currentUser.id);
+
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      await loadHouseholdNodes();
+      renderModalNodesList();
+      fetchNodeTelemetry();
+    }
+
+    function handleNodeChange() {
+      selectedNode = document.getElementById('node-selector').value;
+      updateSelectedNodeDisplay();
+      fetchNodeTelemetry();
+    }
+
+    // 8. Fetch Global Total Household Usage
+    async function fetchGlobalHouseUsage() {
+      if (!currentUser || !currentRawUserId) return;
+      try {
+        const { data, error } = await supabaseClient
+          .from('water_telemetry')
+          .select('volume_liters, raw_pulses')
+          .eq('user_id', currentRawUserId);
+
+        if (error) throw error;
+
+        let total = 0;
+        if (data) {
+          data.forEach(r => {
+            const v = Number(r.volume_liters) || (Number(r.raw_pulses) / K_FACTOR);
+            total += v;
+          });
+        }
+        document.getElementById('global-total-usage').textContent = total.toFixed(2);
+      } catch (err) {
+        console.error("Global usage fetch failed:", err);
+      }
+    }
+
+    // 9. Fetch Periodic (Daily/Monthly/Lifetime) Consumption for the Selected Node
+    async function fetchNodePeriodicAggregates() {
+      if (!currentUser || !currentRawUserId) return;
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('water_telemetry')
+          .select('volume_liters, raw_pulses, created_at')
+          .eq('user_id', currentRawUserId)
+          .eq('node_id', selectedNode);
+
+        if (error) throw error;
+
+        let lifetimeTotal = 0;
+        let dailyTotal = 0;
+        let monthlyTotal = 0;
+
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+
+        if (data && data.length > 0) {
+          data.forEach(row => {
+            const vol = Number(row.volume_liters) || (Number(row.raw_pulses) / K_FACTOR);
+            lifetimeTotal += vol;
+
+            const recordTime = new Date(row.created_at).getTime();
+            if (recordTime >= startOfDay) {
+              dailyTotal += vol;
+            }
+            if (recordTime >= startOfMonth) {
+              monthlyTotal += vol;
+            }
+          });
+        }
+
+        nodeVolumeAccumulated = lifetimeTotal;
+        dailyVolumeAccumulated = dailyTotal;
+        monthlyVolumeAccumulated = monthlyTotal;
+
+        document.getElementById('metric-volume').textContent = nodeVolumeAccumulated.toFixed(2);
+        document.getElementById('metric-daily').textContent = dailyVolumeAccumulated.toFixed(2);
+        document.getElementById('metric-monthly').textContent = monthlyVolumeAccumulated.toFixed(2);
+
+      } catch (err) {
+        console.error('Error computing periodic volumes:', err.message);
+      }
+    }
+
+    // 10. Fetch Telemetry for Specific Selected Node
+    async function fetchNodeTelemetry() {
+      if (!currentUser || !currentRawUserId) return;
+
+      const fetchStatus = document.getElementById('fetch-status');
+      const limit = parseInt(document.getElementById('fetch-limit').value) || 10;
+      const inactiveBanner = document.getElementById('inactive-node-banner');
+      const activeContainer = document.getElementById('active-telemetry-container');
+
+      fetchStatus.textContent = 'Querying...';
+
+      try {
+        const { data, error } = await supabaseClient
+          .from('water_telemetry')
+          .select('*')
+          .eq('user_id', currentRawUserId)
+          .eq('node_id', selectedNode)
+          .order('created_at', { ascending: false })
+          .limit(limit);
+
+        if (error) throw error;
+
+        updateSelectedNodeDisplay();
+        await fetchNodePeriodicAggregates();
+
+        if (data && data.length > 0) {
+          inactiveBanner.classList.add('hidden');
+          activeContainer.classList.remove('opacity-25', 'pointer-events-none');
+
+          chart.data.labels = [];
+          chart.data.datasets[0].data = [];
+
+          const chronologicalData = [...data].reverse();
+          chronologicalData.forEach((row) => {
+            const vol = Number(row.volume_liters) || (Number(row.raw_pulses) / K_FACTOR);
+            const lpm = Number(row.flow_rate_lpm) || ((Number(row.raw_pulses) / (Number(row.delta_t_sec) * K_FACTOR)) * 60);
+            updateDashboardUI(lpm, vol, row.created_at, row.id, false);
+          });
+
+// NEW LINE: Uses the friendly name in the query count label
+            const activeObj = userNodes.find(n => n.node_id === selectedNode);
+            const nodeDisplayName = activeObj ? activeObj.node_label : selectedNode;
+            document.getElementById('record-count-label').textContent = `Showing last ${data.length} records for ${nodeDisplayName}`;          fetchStatus.textContent = `Active (${data.length} rows)`;
+        } else {
+          inactiveBanner.classList.remove('hidden');
+          activeContainer.classList.add('opacity-25', 'pointer-events-none');
+
+          document.getElementById('metric-volume').textContent = "0.00";
+          document.getElementById('metric-daily').textContent = "0.00";
+          document.getElementById('metric-monthly').textContent = "0.00";
+
+          const statusCard = document.getElementById('status-card');
+          const statusText = document.getElementById('status-text');
+          const statusIcon = document.getElementById('status-icon');
+          statusCard.className = "bg-slate-900 border border-slate-800 p-5 rounded-xl shadow";
+          statusText.textContent = "Node Inactive";
+          statusText.className = "text-base font-bold text-slate-500 mt-1";
+          statusIcon.setAttribute("data-lucide", "radio-off");
+          statusIcon.className = "w-5 h-5 text-slate-500";
+
+          chart.data.labels = [];
+          chart.data.datasets[0].data = [];
+          chart.update();
+
+          document.getElementById('latest-row-id').textContent = 'None';
+          fetchStatus.textContent = 'Node Inactive';
+          lucide.createIcons();
+        }
+      } catch (err) {
+        console.error('Error querying node telemetry:', err.message);
+        fetchStatus.textContent = 'Fetch failed';
+      }
+    }
+
+    // 11. Update UI Components & Anomaly Badges
+    function updateDashboardUI(flowRate, volumeInc, timestamp = null, rowId = null, incrementTotals = true) {
+      if (rowId) {
+        document.getElementById('latest-row-id').textContent = `#${rowId}`;
+      }
+
+      if (incrementTotals) {
+        nodeVolumeAccumulated += volumeInc;
+        dailyVolumeAccumulated += volumeInc;
+        monthlyVolumeAccumulated += volumeInc;
+
+        document.getElementById('metric-volume').textContent = nodeVolumeAccumulated.toFixed(2);
+        document.getElementById('metric-daily').textContent = dailyVolumeAccumulated.toFixed(2);
+        document.getElementById('metric-monthly').textContent = monthlyVolumeAccumulated.toFixed(2);
+      }
+
+      const statusCard = document.getElementById('status-card');
+      const statusText = document.getElementById('status-text');
+      const statusIcon = document.getElementById('status-icon');
+
+      if (flowRate > 0.1 && flowRate < 1.2) {
+        statusCard.className = "bg-rose-950/40 border border-rose-600/50 p-5 rounded-xl shadow transition";
+        statusText.textContent = "Warning: Micro-Leak";
+        statusText.className = "text-base font-bold text-rose-400 mt-1";
+        statusIcon.setAttribute("data-lucide", "alert-triangle");
+        statusIcon.className = "w-5 h-5 text-rose-400";
+      } else if (flowRate >= 20.0) {
+        statusCard.className = "bg-red-950 border border-red-600 p-5 rounded-xl shadow transition";
+        statusText.textContent = "Critical: Pipe Burst";
+        statusText.className = "text-base font-bold text-red-500 mt-1";
+        statusIcon.setAttribute("data-lucide", "alert-octagon");
+        statusIcon.className = "w-5 h-5 text-red-500";
+      } else {
+        statusCard.className = "bg-slate-900 border border-slate-800 p-5 rounded-xl shadow transition";
+        statusText.textContent = "Normal Operation";
+        statusText.className = "text-base font-bold text-emerald-400 mt-1";
+        statusIcon.setAttribute("data-lucide", "shield-check");
+        statusIcon.className = "w-5 h-5 text-emerald-400";
+      }
+      lucide.createIcons();
+
+      const timeStr = timestamp
+        ? new Date(timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+        : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      chart.data.labels.push(timeStr);
+      chart.data.datasets[0].data.push(Number(flowRate));
+
+      const limit = parseInt(document.getElementById('fetch-limit').value) || 15;
+      if (chart.data.labels.length > limit) {
+        chart.data.labels.shift();
+        chart.data.datasets[0].data.shift();
+      }
+      chart.update();
+    }
+
+    // 12. Realtime Replication Stream
+    function subscribeToRealtime() {
+      if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
+
+      realtimeChannel = supabaseClient
+        .channel(`house-feed-${currentUser.id}`)
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'water_telemetry' },
+          (payload) => {
+            if (payload.new && payload.new.user_id === currentRawUserId) {
+              const row = payload.new;
+              fetchGlobalHouseUsage();
+
+              if (row.node_id === selectedNode) {
+                document.getElementById('inactive-node-banner').classList.add('hidden');
+                document.getElementById('active-telemetry-container').classList.remove('opacity-25', 'pointer-events-none');
+
+                const vol = Number(row.volume_liters) || (Number(row.raw_pulses) / K_FACTOR);
+                const lpm = Number(row.flow_rate_lpm) || ((Number(row.raw_pulses) / (Number(row.delta_t_sec) * K_FACTOR)) * 60);
+                updateDashboardUI(lpm, vol, row.created_at, row.id, true);
+              }
+            }
+          }
+        )
+        .subscribe();
+    }
+
+    // 13. Simulation Dropdown Logic
+    function toggleMockDropdown(e) {
+      e.stopPropagation();
+      const menu = document.getElementById('mock-dropdown-menu');
+      menu.classList.toggle('hidden');
+    }
+
+    window.addEventListener('click', () => {
+      const menu = document.getElementById('mock-dropdown-menu');
+      if (menu) menu.classList.add('hidden');
+    });
+
+    async function insertSimulatedTelemetry(scenario) {
+      document.getElementById('mock-dropdown-menu').classList.add('hidden');
+      if (!currentUser || !currentRawUserId) return;
+
+      let mockPulses;
+      let anomalyType = 'NORMAL';
+      let severity = 'NONE';
+      const mockDeltaT = 3;
+      const mockVcap = Number((4.6 + Math.random() * 0.4).toFixed(2));
+
+      if (scenario === 'leak') {
+        mockPulses = Math.floor(15 + Math.random() * 8);
+        anomalyType = 'MICRO_LEAK';
+        severity = 'WARNING';
+      } else if (scenario === 'burst') {
+        mockPulses = Math.floor(520 + Math.random() * 100);
+        anomalyType = 'PIPE_BURST';
+        severity = 'CRITICAL';
+      } else {
+        mockPulses = Math.floor(120 + Math.random() * 50);
+        anomalyType = 'NORMAL';
+        severity = 'NONE';
+      }
+
+      const calculatedVol = Number((mockPulses / K_FACTOR).toFixed(3));
+      const calculatedLPM = Number(((mockPulses / (mockDeltaT * K_FACTOR)) * 60).toFixed(2));
+
+      const { error } = await supabaseClient.from('water_telemetry').insert([
+        {
+          user_id: currentRawUserId,
+          node_id: selectedNode,
+          raw_pulses: mockPulses,
+          delta_t_sec: mockDeltaT,
+          supercap_v: mockVcap,
+          flow_rate_lpm: calculatedLPM,
+          volume_liters: calculatedVol,
+          anomaly_type: anomalyType,
+          severity: severity
+        }
+      ]);
+
+      if (error) console.error('Insert error:', error.message);
+    }
+
+    function updateKFactor() {
+      const val = parseFloat(document.getElementById('input-kfactor').value);
+      if (val > 0) K_FACTOR = val;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      resetAuthForm();
+    });
+
+    async function initSession() {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (session) {
+        currentUser = session.user;
+        await renderAuthenticatedView();
+      } else {
+        resetAuthForm();
+      }
+    }
+
+    initSession();
+  </script>
+</body>
+
+</html>
