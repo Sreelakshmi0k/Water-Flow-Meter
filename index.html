@@ -28,8 +28,7 @@
         <button id="tab-login" type="button" onclick="switchAuthTab('login')"
           class="flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400">Sign In</button>
         <button id="tab-action" type="button" onclick="switchAuthTab('register')"
-          class="flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300">Register
-          User ID</button>
+          class="flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300">Register User ID</button>
       </div>
 
       <div class="space-y-4">
@@ -427,7 +426,7 @@
       if (mode === 'login') {
         loginTab.className = "flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400";
         actionTab.className = "flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300";
-        actionTab.textContent = "Register House ID";
+        actionTab.textContent = "Register User ID";
         actionTab.setAttribute("onclick", "switchAuthTab('register')");
         pinContainer.classList.add('hidden');
         forgotLink.classList.remove('hidden');
@@ -436,12 +435,12 @@
       } else if (mode === 'register') {
         actionTab.className = "flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400";
         loginTab.className = "flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300";
-        actionTab.textContent = "Register House ID";
+        actionTab.textContent = "Register User ID";
         actionTab.setAttribute("onclick", "switchAuthTab('register')");
         pinContainer.classList.remove('hidden');
         forgotLink.classList.add('hidden');
         pwdLabel.textContent = "Set Password";
-        btnText.textContent = "Register House ID";
+        btnText.textContent = "Register User ID";
       } else if (mode === 'reset') {
         actionTab.className = "flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400";
         loginTab.className = "flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300";
