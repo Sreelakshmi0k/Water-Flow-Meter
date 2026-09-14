@@ -3,19 +3,18 @@
 
 <head>
   <!-- Artistic Google Fonts for Tech & Fluid Themes -->
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@700;800&family=Space+Grotesk:wght@700&display=swap"
+    rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AquaNetics - Residential Node Multi-Meter</title>
+  <title>AquaNetics - Sensing the stream</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <script src="https://unpkg.com/lucide@latest"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -24,10 +23,11 @@
   <div id="auth-section" class="w-full max-w-md mx-auto p-6">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
       <div class="text-center mb-6">
-        <h1 class="text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 drop-shadow-[0_0_16px_rgba(34,211,238,0.45)]" style="font-family: 'Orbitron', sans-serif;">
-  AQUANETICS
-</h1></span>
-
+        <h1
+          class="text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 drop-shadow-[0_0_16px_rgba(34,211,238,0.45)]"
+          style="font-family: 'Orbitron', sans-serif;">
+          AQUANETICS
+        </h1>
         <p class="text-xs text-slate-400 mt-1">Smart Residential Water Management System</p>
       </div>
 
@@ -35,7 +35,8 @@
         <button id="tab-login" type="button" onclick="switchAuthTab('login')"
           class="flex-1 pb-2 font-semibold text-cyan-400 border-b-2 border-cyan-400">Sign In</button>
         <button id="tab-action" type="button" onclick="switchAuthTab('register')"
-          class="flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300">Register User ID</button>
+          class="flex-1 pb-2 font-semibold text-slate-500 border-b-2 border-transparent hover:text-slate-300">Register
+          User ID</button>
       </div>
 
       <div class="space-y-4">
@@ -90,9 +91,11 @@
       class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-slate-800 pb-5 gap-4">
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">
         <div>
-          <h1 class="text-3xl font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 drop-shadow-[0_0_16px_rgba(34,211,238,0.45)]" style="font-family: 'Orbitron', sans-serif;">
-  AQUANETICS
-</h1>
+          <h1
+            class="text-3xl font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 drop-shadow-[0_0_16px_rgba(34,211,238,0.45)]"
+            style="font-family: 'Orbitron', sans-serif;">
+            AQUANETICS
+          </h1>
           <p class="text-xs text-slate-400">Residence ID: <span id="user-display"
               class="text-emerald-400 font-mono font-bold"></span></p>
         </div>
@@ -127,7 +130,7 @@
           </button>
         </div>
 
-        <button onclick="fetchNodeTelemetry()"
+        <button onclick="refreshAllTelemetry()"
           class="bg-slate-800 hover:bg-slate-700 text-xs px-3 py-2 rounded text-cyan-400 border border-slate-700 font-medium transition shadow flex items-center gap-1.5">
           <i data-lucide="refresh-cw" class="w-4 h-4"></i> Refresh
         </button>
@@ -146,10 +149,10 @@
               class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Normal Flow (5–8 L/min)
             </button>
-            <!-- <button type="button" onclick="insertSimulatedTelemetry('leak')"
+            <button type="button" onclick="insertSimulatedTelemetry('leak')"
               class="w-full text-left px-4 py-2 text-xs text-rose-300 hover:bg-slate-800 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-rose-400"></span> Micro-Leak (0.6–1.0 L/min)
-            </button> -->
+            </button>
             <button type="button" onclick="insertSimulatedTelemetry('burst')"
               class="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-slate-800 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-red-500"></span> Pipe Burst (22+ L/min)
@@ -183,7 +186,6 @@
             <span class="text-sm font-medium">Active Node</span>
             <i data-lucide="cpu" class="w-5 h-5 text-cyan-400"></i>
           </div>
-          <!-- NEW VERSION: Friendly label is large, technical ID is subtle -->
           <div>
             <div id="metric-node-name" class="text-xl font-black text-cyan-400 tracking-wide truncate">
               Main Water Inlet
@@ -268,9 +270,13 @@
             </div>
 
             <div class="border-t border-slate-800 pt-3">
-              <label class="block text-xs text-slate-400 mb-1">K-Factor Calibration (Pulses / Liter)</label>
-              <input id="input-kfactor" type="number" value="450" onchange="updateKFactor()"
-                class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500" />
+              <div class="flex justify-between items-center mb-1">
+                <label class="block text-xs text-slate-400">K-Factor Calibration (Pulses / Liter)</label>
+                <span id="kfactor-badge" class="text-[10px] text-cyan-400 font-mono font-semibold">450 p/L</span>
+              </div>
+              <input id="input-kfactor" type="number" min="1" step="1" value="450" oninput="updateKFactor()" onchange="updateKFactor()"
+                class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
+              <p class="text-[10px] text-slate-500 mt-1">Adjust pulses per liter to dynamically recalculate flow rate and volumetric totals across the household.</p>
             </div>
           </div>
 
@@ -327,7 +333,7 @@
   <script>
     lucide.createIcons();
 
-    // 1. Supabase Initialization (Add your project keys)
+    // 1. Supabase Initialization
     const SUPABASE_URL = 'https://eawyhrrthyglkgsnqxev.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_bEAaYFSF3yab8K3r0Jrq0Q_moyAloA2';
 
@@ -345,6 +351,22 @@
     let dailyVolumeAccumulated = 0;
     let monthlyVolumeAccumulated = 0;
     let realtimeChannel = null;
+
+    // Calibration calculation engines: dynamically apply K_FACTOR
+    function computeRowVolume(row) {
+      if (row.raw_pulses !== null && row.raw_pulses !== undefined && !isNaN(row.raw_pulses)) {
+        return Number(row.raw_pulses) / K_FACTOR;
+      }
+      return Number(row.volume_liters) || 0;
+    }
+
+    function computeRowFlowRate(row) {
+      if (row.raw_pulses !== null && row.raw_pulses !== undefined && !isNaN(row.raw_pulses)) {
+        const dt = Number(row.delta_t_sec) > 0 ? Number(row.delta_t_sec) : 1;
+        return (Number(row.raw_pulses) / (dt * K_FACTOR)) * 60;
+      }
+      return Number(row.flow_rate_lpm) || 0;
+    }
 
     function resetAuthForm() {
       const u = document.getElementById('auth-userid');
@@ -371,7 +393,6 @@
       return `${cleanId}@hydropulse.local`;
     }
 
-    // Toggle password visibility
     function togglePasswordVisibility() {
       const pwdInput = document.getElementById('auth-password');
       const eyeIcon = document.getElementById('eye-icon');
@@ -386,7 +407,6 @@
       lucide.createIcons();
     }
 
-    // Enter Key Listener to trigger Auth Submit
     function handleAuthEnterKey(event) {
       if (event.key === 'Enter') {
         event.preventDefault();
@@ -503,7 +523,6 @@
             { id: data.user.id, custom_username: rawUserId, recovery_pin: pin }
           ]);
 
-          // Seed default household nodes
           await supabaseClient.from('house_nodes').insert([
             { user_id: data.user.id, node_id: 'node_main', node_label: 'Main Water Inlet' },
             { user_id: data.user.id, node_id: 'node_kitchen', node_label: 'Kitchen Tap' },
@@ -581,9 +600,13 @@
       document.getElementById('user-display').textContent = currentRawUserId;
 
       await loadHouseholdNodes();
+      refreshAllTelemetry();
+      subscribeToRealtime();
+    }
+
+    function refreshAllTelemetry() {
       fetchGlobalHouseUsage();
       fetchNodeTelemetry();
-      subscribeToRealtime();
     }
 
     // 7. Node Management
@@ -637,12 +660,10 @@
       updateSelectedNodeDisplay();
     }
 
-    // NEW VERSION
-      function updateSelectedNodeDisplay() {
+    function updateSelectedNodeDisplay() {
       const nodeObj = userNodes.find(n => n.node_id === selectedNode);
       const friendlyName = nodeObj ? nodeObj.node_label : selectedNode;
 
-      // Shows friendly name on the card and in the chart title
       document.getElementById('metric-node-name').textContent = friendlyName;
       document.getElementById('metric-node-id').textContent = selectedNode;
       document.getElementById('chart-node-label').textContent = friendlyName;
@@ -756,7 +777,7 @@
       fetchNodeTelemetry();
     }
 
-    // 8. Fetch Global Total Household Usage
+    // 8. Fetch Global Total Household Usage (uses dynamic K_FACTOR calibration)
     async function fetchGlobalHouseUsage() {
       if (!currentUser || !currentRawUserId) return;
       try {
@@ -770,8 +791,7 @@
         let total = 0;
         if (data) {
           data.forEach(r => {
-            const v = Number(r.volume_liters) || (Number(r.raw_pulses) / K_FACTOR);
-            total += v;
+            total += computeRowVolume(r);
           });
         }
         document.getElementById('global-total-usage').textContent = total.toFixed(2);
@@ -780,7 +800,7 @@
       }
     }
 
-    // 9. Fetch Periodic (Daily/Monthly/Lifetime) Consumption for the Selected Node
+    // 9. Fetch Periodic Consumption (uses dynamic K_FACTOR calibration)
     async function fetchNodePeriodicAggregates() {
       if (!currentUser || !currentRawUserId) return;
 
@@ -803,7 +823,7 @@
 
         if (data && data.length > 0) {
           data.forEach(row => {
-            const vol = Number(row.volume_liters) || (Number(row.raw_pulses) / K_FACTOR);
+            const vol = computeRowVolume(row);
             lifetimeTotal += vol;
 
             const recordTime = new Date(row.created_at).getTime();
@@ -863,15 +883,15 @@
 
           const chronologicalData = [...data].reverse();
           chronologicalData.forEach((row) => {
-            const vol = Number(row.volume_liters) || (Number(row.raw_pulses) / K_FACTOR);
-            const lpm = Number(row.flow_rate_lpm) || ((Number(row.raw_pulses) / (Number(row.delta_t_sec) * K_FACTOR)) * 60);
+            const vol = computeRowVolume(row);
+            const lpm = computeRowFlowRate(row);
             updateDashboardUI(lpm, vol, row.created_at, row.id, false);
           });
 
-// NEW LINE: Uses the friendly name in the query count label
-            const activeObj = userNodes.find(n => n.node_id === selectedNode);
-            const nodeDisplayName = activeObj ? activeObj.node_label : selectedNode;
-            document.getElementById('record-count-label').textContent = `Showing last ${data.length} records for ${nodeDisplayName}`;          fetchStatus.textContent = `Active (${data.length} rows)`;
+          const activeObj = userNodes.find(n => n.node_id === selectedNode);
+          const nodeDisplayName = activeObj ? activeObj.node_label : selectedNode;
+          document.getElementById('record-count-label').textContent = `Showing last ${data.length} records for ${nodeDisplayName}`;
+          fetchStatus.textContent = `Active (${data.length} rows)`;
         } else {
           inactiveBanner.classList.remove('hidden');
           activeContainer.classList.add('opacity-25', 'pointer-events-none');
@@ -949,7 +969,7 @@
         : new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
       chart.data.labels.push(timeStr);
-      chart.data.datasets[0].data.push(Number(flowRate));
+      chart.data.datasets[0].data.push(Number(flowRate.toFixed(2)));
 
       const limit = parseInt(document.getElementById('fetch-limit').value) || 15;
       if (chart.data.labels.length > limit) {
@@ -977,8 +997,8 @@
                 document.getElementById('inactive-node-banner').classList.add('hidden');
                 document.getElementById('active-telemetry-container').classList.remove('opacity-25', 'pointer-events-none');
 
-                const vol = Number(row.volume_liters) || (Number(row.raw_pulses) / K_FACTOR);
-                const lpm = Number(row.flow_rate_lpm) || ((Number(row.raw_pulses) / (Number(row.delta_t_sec) * K_FACTOR)) * 60);
+                const vol = computeRowVolume(row);
+                const lpm = computeRowFlowRate(row);
                 updateDashboardUI(lpm, vol, row.created_at, row.id, true);
               }
             }
@@ -1043,9 +1063,19 @@
       if (error) console.error('Insert error:', error.message);
     }
 
+    // 14. Real-Time Dynamic K-Factor Calibration
     function updateKFactor() {
-      const val = parseFloat(document.getElementById('input-kfactor').value);
-      if (val > 0) K_FACTOR = val;
+      const input = document.getElementById('input-kfactor');
+      const val = parseFloat(input.value);
+
+      if (val && val > 0) {
+        K_FACTOR = val;
+        document.getElementById('kfactor-badge').textContent = `${Math.round(K_FACTOR)} p/L`;
+
+        // Recalculate both selected node stats/graph and total household volume
+        fetchNodeTelemetry();
+        fetchGlobalHouseUsage();
+      }
     }
 
     window.addEventListener('DOMContentLoaded', () => {
