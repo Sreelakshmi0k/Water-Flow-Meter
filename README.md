@@ -1,16 +1,13 @@
-# React + Vite
+# Aquanetics: Autonomous, Self-Powered Water Telemetry & Analytics
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+**Aquanetics** is an intelligent, real-time residential water monitoring platform engineered for precision fluid analytics, consumption tracking, and proactive pipeline health diagnostics. Designed to bridge low-power embedded sensing with modern cloud architecture, the platform captures high-frequency telemetry from inline micro-hydro sensor nodes to deliver immediate visibility into domestic fluid dynamics—without relying on traditional battery maintenance.
 
-Currently, two official plugins are available:
+---
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+### Core Highlights
 
-## React Compiler
-
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+* **Real-Time Telemetry Streaming:** Instantaneous flow rate rendering, dynamic pulse-to-volume mathematical conversion, and live chart animations powered by WebSocket-driven PostgreSQL change data capture.
+* **Autonomous Anomaly Detection:** Automated, edge-informed diagnostics that instantly detect and flag pipeline anomalies, separating normal water flow ($5-8\text{ L/min}$) from catastrophic pipe bursts ($\ge 22.0\text{ L/min}$).
+* **Multi-Node Architecture:** Granular, multi-pipe monitoring support that maps distinct household lines (e.g., Main Inlet, Kitchen, Bathroom) to dedicated calibration profiles.
+* **On-the-Fly Calibration:** Interactive front-end K-Factor parameter tuning, allowing real-time adjustment of sensor pulses-per-liter constants without firmware modification.
+* **Temporal Consumption Analytics:** Aggregated usage summaries categorizing domestic water consumption across customizable daily and monthly intervals.
