@@ -2,9 +2,13 @@
 <html lang="en">
 
 <head>
+  <!-- Artistic Google Fonts for Tech & Fluid Themes -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Syne:wght@700;800&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>HydroPulse IoT - Residential Node Multi-Meter</title>
+  <title>AquaNetics - Residential Node Multi-Meter</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
 
@@ -20,8 +24,11 @@
   <div id="auth-section" class="w-full max-w-md mx-auto p-6">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
       <div class="text-center mb-6">
-        <h1 class="text-2xl font-bold tracking-wide text-cyan-400">HydroPulse IoT</h1>
-        <p class="text-xs text-slate-400 mt-1">Smart Residential Multi-Node Telemetry</p>
+        <h1 class="text-3xl font-black tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 drop-shadow-[0_0_16px_rgba(34,211,238,0.45)]" style="font-family: 'Orbitron', sans-serif;">
+  AQUANETICS
+</h1></span>
+
+        <p class="text-xs text-slate-400 mt-1">Smart Residential Water Management System</p>
       </div>
 
       <div class="flex border-b border-slate-800 mb-6 text-sm">
@@ -83,7 +90,9 @@
       class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-slate-800 pb-5 gap-4">
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">
         <div>
-          <h1 class="text-2xl font-bold tracking-wide text-cyan-400">HydroPulse IoT</h1>
+          <h1 class="text-3xl font-black tracking-widest uppercase text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 drop-shadow-[0_0_16px_rgba(34,211,238,0.45)]" style="font-family: 'Orbitron', sans-serif;">
+  AQUANETICS
+</h1>
           <p class="text-xs text-slate-400">Residence ID: <span id="user-display"
               class="text-emerald-400 font-mono font-bold"></span></p>
         </div>
@@ -137,10 +146,10 @@
               class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Normal Flow (5–8 L/min)
             </button>
-            <button type="button" onclick="insertSimulatedTelemetry('leak')"
+            <!-- <button type="button" onclick="insertSimulatedTelemetry('leak')"
               class="w-full text-left px-4 py-2 text-xs text-rose-300 hover:bg-slate-800 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-rose-400"></span> Micro-Leak (0.6–1.0 L/min)
-            </button>
+            </button> -->
             <button type="button" onclick="insertSimulatedTelemetry('burst')"
               class="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-slate-800 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-red-500"></span> Pipe Burst (22+ L/min)
