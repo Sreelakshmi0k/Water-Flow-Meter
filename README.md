@@ -1,13 +1,3 @@
 # Aquanetics: Autonomous, Self-Powered Water Telemetry & Analytics
 
-**Aquanetics** is an intelligent, real-time residential water monitoring platform engineered for precision fluid analytics, consumption tracking, and proactive pipeline health diagnostics. Designed to bridge low-power embedded sensing with modern cloud architecture, the platform captures high-frequency telemetry from inline micro-hydro sensor nodes to deliver immediate visibility into domestic fluid dynamics—without relying on traditional battery maintenance.
-
----
-
-### Core Highlights
-
-* **Real-Time Telemetry Streaming:** Instantaneous flow rate rendering, dynamic pulse-to-volume mathematical conversion, and live chart animations powered by WebSocket-driven PostgreSQL change data capture.
-* **Autonomous Anomaly Detection:** Automated, edge-informed diagnostics that instantly detect and flag pipeline anomalies, separating normal water flow ($5-8\text{ L/min}$) from catastrophic pipe bursts ($\ge 22.0\text{ L/min}$).
-* **Multi-Node Architecture:** Granular, multi-pipe monitoring support that maps distinct household lines (e.g., Main Inlet, Kitchen, Bathroom) to dedicated calibration profiles.
-* **On-the-Fly Calibration:** Interactive front-end K-Factor parameter tuning, allowing real-time adjustment of sensor pulses-per-liter constants without firmware modification.
-* **Temporal Consumption Analytics:** Aggregated usage summaries categorizing domestic water consumption across customizable daily and monthly intervals.
+**Aquanetics**  is a self-powered system that measures household and industrial water consumption without batteries or external power. An F50 micro-hydro generator placed in the water line converts flow energy into electricity. A DFRobot DFM8001 energy-harvesting module boosts this low power and stores it in a 0.22 F supercapacitor. When the stored voltage reaches the set threshold, the module's status outputs wake a Renesas DA14535 Bluetooth 5.3 SoC. The DA14535 counts flow-sensor pulses, keeps the count in retainable RAM, sends a short BLE packet to an ESP32 gateway, and returns to sleep. The gateway receives packets from several nodes at once and uploads the readings over Wi-Fi to a Supabase database. A React web dashboard with login, live flow charts and a calibration setting converts the data into volume and shows consumption. The hardware design uses KiCad for the circuit and PCB. The node firmware uses the Renesas SmartBond SDK6 with SEGGER Embedded Studio, and the gateway uses the Arduino IDE.

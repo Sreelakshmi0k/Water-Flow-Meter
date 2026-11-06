@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <!-- Artistic Google Fonts for Tech & Fluid Themes -->
+  <!-- Google Fonts for Tech & Futuristic Themes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link
@@ -10,7 +10,7 @@
     rel="stylesheet">
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AquaNetics - Sensing the stream</title>
+  <title>AquaNetics - Residential Node Multi-Meter</title>
 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -20,6 +20,7 @@
 
 <body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col justify-center">
 
+  <!-- Authentication Section -->
   <div id="auth-section" class="w-full max-w-md mx-auto p-6">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl">
       <div class="text-center mb-6">
@@ -85,6 +86,7 @@
     </div>
   </div>
 
+  <!-- Dashboard Section -->
   <div id="dashboard-section" class="hidden min-h-screen p-6 md:p-10 w-full flex-col justify-start">
 
     <header
@@ -147,14 +149,13 @@
             class="hidden absolute right-0 mt-2 w-52 rounded-lg bg-slate-900 border border-slate-800 shadow-2xl z-50 py-1.5">
             <button type="button" onclick="insertSimulatedTelemetry('normal')"
               class="w-full text-left px-4 py-2 text-xs text-slate-200 hover:bg-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Normal Flow (5–8 L/min)
+              <span class="w-2 h-2 rounded-full bg-emerald-400"></span> Normal Flow (5-8 L/min)
             </button>
-            <!--
-            <button type="button" onclick="insertSimulatedTelemetry('leak')"
+            
+            <!--<button type="button" onclick="insertSimulatedTelemetry('leak')"
               class="w-full text-left px-4 py-2 text-xs text-rose-300 hover:bg-slate-800 flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full bg-rose-400"></span> Micro-Leak (0.6–1.0 L/min)
-            </button>
-          -->
+              <span class="w-2 h-2 rounded-full bg-rose-400"></span> Micro-Leak (~0.8 L/min)
+            </button>-->
             <button type="button" onclick="insertSimulatedTelemetry('burst')"
               class="w-full text-left px-4 py-2 text-xs text-red-400 hover:bg-slate-800 flex items-center gap-2">
               <span class="w-2 h-2 rounded-full bg-red-500"></span> Pipe Burst (22+ L/min)
@@ -175,8 +176,7 @@
         <i data-lucide="radio-off" class="w-6 h-6"></i>
       </div>
       <h3 class="text-base font-semibold text-slate-200">No Telemetry Recorded for this Node</h3>
-      <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">This node is currently offline or waiting for its first
-        telemetry transmission from the hardware module.</p>
+      <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">This node is currently offline or waiting for its first packet transmission from the energy-harvesting module.</p>
     </div>
 
     <div id="active-telemetry-container">
@@ -259,7 +259,7 @@
 
         <div class="bg-slate-900 border border-slate-800 p-6 rounded-xl shadow flex flex-col justify-between">
           <div>
-            <h2 class="text-lg font-semibold text-slate-200 mb-3">Pipe Calibration</h2>
+            <h2 class="text-lg font-semibold text-slate-200 mb-3">Transmission Calibration</h2>
 
             <div class="mb-4">
               <label class="block text-xs text-slate-400 mb-1">Records to Query</label>
@@ -273,12 +273,12 @@
 
             <div class="border-t border-slate-800 pt-3">
               <div class="flex justify-between items-center mb-1">
-                <label class="block text-xs text-slate-400">K-Factor Calibration (Pulses / Liter)</label>
-                <span id="kfactor-badge" class="text-[10px] text-cyan-400 font-mono font-semibold">450 p/L</span>
+                <label class="block text-xs text-slate-400">Packet Volume Constant (Packets / Liter)</label>
+                <span id="kfactor-badge" class="text-[10px] text-cyan-400 font-mono font-semibold">10 pkts/L</span>
               </div>
-              <input id="input-kfactor" type="number" min="1" step="1" value="450" oninput="updateKFactor()" onchange="updateKFactor()"
+              <input id="input-kfactor" type="number" min="0.1" step="0.1" value="10" oninput="updateCalibrationConstant()" onchange="updateCalibrationConstant()"
                 class="w-full bg-slate-950 border border-slate-700 rounded px-3 py-1.5 text-sm text-white focus:outline-none focus:border-cyan-500 font-mono" />
-              <p class="text-[10px] text-slate-500 mt-1">Adjust pulses per liter to dynamically recalculate flow rate and volumetric totals across the household.</p>
+              <p class="text-[10px] text-slate-500 mt-1">Water volume is estimated from packet counts, and flow rates are calculated dynamically from inter-packet arrival intervals ($\Delta t$).</p>
             </div>
           </div>
 
@@ -293,6 +293,7 @@
 
   </div>
 
+  <!-- Node Configuration Modal -->
   <div id="node-modal"
     class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl">
@@ -339,6 +340,7 @@
     const SUPABASE_URL = 'https://eawyhrrthyglkgsnqxev.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_bEAaYFSF3yab8K3r0Jrq0Q_moyAloA2';
 
+
     const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
       auth: { persistSession: true, autoRefreshToken: true }
     });
@@ -348,26 +350,35 @@
     let currentRawUserId = '';
     let selectedNode = 'node_main';
     let userNodes = [];
-    let K_FACTOR = 450;
+
+    // Packet Interval Calibration Engine
+    let PACKETS_PER_LITER = 10;          // Each packet corresponds to (1 / PACKETS_PER_LITER) Liters
+    const MAX_IDLE_TIMEOUT_SEC = 300;    // > 5 minutes between packets indicates flow has paused
+    let lastRealtimeTimestamp = null;    // Tracks the previous packet timestamp for live streams
+
     let nodeVolumeAccumulated = 0;
     let dailyVolumeAccumulated = 0;
     let monthlyVolumeAccumulated = 0;
     let realtimeChannel = null;
 
-    // Calibration calculation engines: dynamically apply K_FACTOR
-    function computeRowVolume(row) {
-      if (row.raw_pulses !== null && row.raw_pulses !== undefined && !isNaN(row.raw_pulses)) {
-        return Number(row.raw_pulses) / K_FACTOR;
-      }
-      return Number(row.volume_liters) || 0;
-    }
+    // Estimate volume and instantaneous flow rate from inter-packet arrival time (delta_t)
+    function computeIntervalMetrics(currentTimeStr, previousTimeStr) {
+      const volumeInc = 1 / PACKETS_PER_LITER;
 
-    function computeRowFlowRate(row) {
-      if (row.raw_pulses !== null && row.raw_pulses !== undefined && !isNaN(row.raw_pulses)) {
-        const dt = Number(row.delta_t_sec) > 0 ? Number(row.delta_t_sec) : 1;
-        return (Number(row.raw_pulses) / (dt * K_FACTOR)) * 60;
+      if (!previousTimeStr) {
+        return { flowRateLpm: 0, volumeLiters: volumeInc, deltaT: null };
       }
-      return Number(row.flow_rate_lpm) || 0;
+
+      const dt = (new Date(currentTimeStr).getTime() - new Date(previousTimeStr).getTime()) / 1000;
+
+      // Filter out stale intervals, reversed timestamps, or long pauses
+      if (dt <= 0 || dt > MAX_IDLE_TIMEOUT_SEC) {
+        return { flowRateLpm: 0, volumeLiters: volumeInc, deltaT: dt };
+      }
+
+      // Flow rate in Liters per minute: (Volume / Seconds) * 60
+      const flowRateLpm = (volumeInc / dt) * 60;
+      return { flowRateLpm, volumeLiters: volumeInc, deltaT: dt };
     }
 
     function resetAuthForm() {
@@ -423,7 +434,7 @@
       data: {
         labels: [],
         datasets: [{
-          label: 'Flow Rate (L/min)',
+          label: 'Estimated Flow Rate (L/min)',
           data: [],
           borderColor: '#22d3ee',
           backgroundColor: 'rgba(34, 211, 238, 0.1)',
@@ -576,6 +587,7 @@
       await supabaseClient.auth.signOut();
       currentUser = null;
       currentRawUserId = '';
+      lastRealtimeTimestamp = null;
       if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
 
       resetAuthForm();
@@ -779,68 +791,58 @@
       fetchNodeTelemetry();
     }
 
-    // 8. Fetch Global Total Household Usage (uses dynamic K_FACTOR calibration)
+    // 8. Global Household Usage Derived from Packet Counts
     async function fetchGlobalHouseUsage() {
       if (!currentUser || !currentRawUserId) return;
       try {
-        const { data, error } = await supabaseClient
+        const { count, error } = await supabaseClient
           .from('water_telemetry')
-          .select('volume_liters, raw_pulses')
+          .select('*', { count: 'exact', head: true })
           .eq('user_id', currentRawUserId);
 
         if (error) throw error;
 
-        let total = 0;
-        if (data) {
-          data.forEach(r => {
-            total += computeRowVolume(r);
-          });
-        }
+        const total = (count || 0) * (1 / PACKETS_PER_LITER);
         document.getElementById('global-total-usage').textContent = total.toFixed(2);
       } catch (err) {
         console.error("Global usage fetch failed:", err);
       }
     }
 
-    // 9. Fetch Periodic Consumption (uses dynamic K_FACTOR calibration)
+    // 9. Periodic Aggregates Derived from Packet Timestamps
     async function fetchNodePeriodicAggregates() {
       if (!currentUser || !currentRawUserId) return;
 
       try {
         const { data, error } = await supabaseClient
           .from('water_telemetry')
-          .select('volume_liters, raw_pulses, created_at')
+          .select('created_at')
           .eq('user_id', currentRawUserId)
           .eq('node_id', selectedNode);
 
         if (error) throw error;
 
-        let lifetimeTotal = 0;
-        let dailyTotal = 0;
-        let monthlyTotal = 0;
+        let lifetimePackets = 0;
+        let dailyPackets = 0;
+        let monthlyPackets = 0;
 
         const now = new Date();
         const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
         const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
 
         if (data && data.length > 0) {
+          lifetimePackets = data.length;
           data.forEach(row => {
-            const vol = computeRowVolume(row);
-            lifetimeTotal += vol;
-
             const recordTime = new Date(row.created_at).getTime();
-            if (recordTime >= startOfDay) {
-              dailyTotal += vol;
-            }
-            if (recordTime >= startOfMonth) {
-              monthlyTotal += vol;
-            }
+            if (recordTime >= startOfDay) dailyPackets++;
+            if (recordTime >= startOfMonth) monthlyPackets++;
           });
         }
 
-        nodeVolumeAccumulated = lifetimeTotal;
-        dailyVolumeAccumulated = dailyTotal;
-        monthlyVolumeAccumulated = monthlyTotal;
+        const volPerPacket = 1 / PACKETS_PER_LITER;
+        nodeVolumeAccumulated = lifetimePackets * volPerPacket;
+        dailyVolumeAccumulated = dailyPackets * volPerPacket;
+        monthlyVolumeAccumulated = monthlyPackets * volPerPacket;
 
         document.getElementById('metric-volume').textContent = nodeVolumeAccumulated.toFixed(2);
         document.getElementById('metric-daily').textContent = dailyVolumeAccumulated.toFixed(2);
@@ -851,7 +853,7 @@
       }
     }
 
-    // 10. Fetch Telemetry for Specific Selected Node
+    // 10. Fetch Node Telemetry with Inter-Packet Interval Flow Calculation
     async function fetchNodeTelemetry() {
       if (!currentUser || !currentRawUserId) return;
 
@@ -869,7 +871,7 @@
           .eq('user_id', currentRawUserId)
           .eq('node_id', selectedNode)
           .order('created_at', { ascending: false })
-          .limit(limit);
+          .limit(limit + 1);
 
         if (error) throw error;
 
@@ -884,17 +886,24 @@
           chart.data.datasets[0].data = [];
 
           const chronologicalData = [...data].reverse();
-          chronologicalData.forEach((row) => {
-            const vol = computeRowVolume(row);
-            const lpm = computeRowFlowRate(row);
-            updateDashboardUI(lpm, vol, row.created_at, row.id, false);
-          });
+
+          for (let i = 1; i < chronologicalData.length; i++) {
+            const prevRow = chronologicalData[i - 1];
+            const currentRow = chronologicalData[i];
+
+            const { flowRateLpm, volumeLiters } = computeIntervalMetrics(currentRow.created_at, prevRow.created_at);
+            updateDashboardUI(flowRateLpm, volumeLiters, currentRow.created_at, currentRow.id, false);
+          }
+
+          lastRealtimeTimestamp = chronologicalData[chronologicalData.length - 1].created_at;
 
           const activeObj = userNodes.find(n => n.node_id === selectedNode);
           const nodeDisplayName = activeObj ? activeObj.node_label : selectedNode;
-          document.getElementById('record-count-label').textContent = `Showing last ${data.length} records for ${nodeDisplayName}`;
-          fetchStatus.textContent = `Active (${data.length} rows)`;
+          const displayCount = Math.min(data.length, limit);
+          document.getElementById('record-count-label').textContent = `Showing last ${displayCount} records for ${nodeDisplayName}`;
+          fetchStatus.textContent = `Active (${displayCount} rows)`;
         } else {
+          lastRealtimeTimestamp = null;
           inactiveBanner.classList.remove('hidden');
           activeContainer.classList.add('opacity-25', 'pointer-events-none');
 
@@ -925,7 +934,7 @@
       }
     }
 
-    // 11. Update UI Components & Anomaly Badges
+    // 11. Update UI Components, Graph, & Health Indicators
     function updateDashboardUI(flowRate, volumeInc, timestamp = null, rowId = null, incrementTotals = true) {
       if (rowId) {
         document.getElementById('latest-row-id').textContent = `#${rowId}`;
@@ -981,7 +990,7 @@
       chart.update();
     }
 
-    // 12. Realtime Replication Stream
+    // 12. Realtime Stream Listener
     function subscribeToRealtime() {
       if (realtimeChannel) supabaseClient.removeChannel(realtimeChannel);
 
@@ -999,9 +1008,10 @@
                 document.getElementById('inactive-node-banner').classList.add('hidden');
                 document.getElementById('active-telemetry-container').classList.remove('opacity-25', 'pointer-events-none');
 
-                const vol = computeRowVolume(row);
-                const lpm = computeRowFlowRate(row);
-                updateDashboardUI(lpm, vol, row.created_at, row.id, true);
+                const { flowRateLpm, volumeLiters } = computeIntervalMetrics(row.created_at, lastRealtimeTimestamp);
+                lastRealtimeTimestamp = row.created_at;
+
+                updateDashboardUI(flowRateLpm, volumeLiters, row.created_at, row.id, true);
               }
             }
           }
@@ -1025,38 +1035,23 @@
       document.getElementById('mock-dropdown-menu').classList.add('hidden');
       if (!currentUser || !currentRawUserId) return;
 
-      let mockPulses;
       let anomalyType = 'NORMAL';
       let severity = 'NONE';
-      const mockDeltaT = 3;
       const mockVcap = Number((4.6 + Math.random() * 0.4).toFixed(2));
 
       if (scenario === 'leak') {
-        mockPulses = Math.floor(15 + Math.random() * 8);
         anomalyType = 'MICRO_LEAK';
         severity = 'WARNING';
       } else if (scenario === 'burst') {
-        mockPulses = Math.floor(520 + Math.random() * 100);
         anomalyType = 'PIPE_BURST';
         severity = 'CRITICAL';
-      } else {
-        mockPulses = Math.floor(120 + Math.random() * 50);
-        anomalyType = 'NORMAL';
-        severity = 'NONE';
       }
-
-      const calculatedVol = Number((mockPulses / K_FACTOR).toFixed(3));
-      const calculatedLPM = Number(((mockPulses / (mockDeltaT * K_FACTOR)) * 60).toFixed(2));
 
       const { error } = await supabaseClient.from('water_telemetry').insert([
         {
           user_id: currentRawUserId,
           node_id: selectedNode,
-          raw_pulses: mockPulses,
-          delta_t_sec: mockDeltaT,
           supercap_v: mockVcap,
-          flow_rate_lpm: calculatedLPM,
-          volume_liters: calculatedVol,
           anomaly_type: anomalyType,
           severity: severity
         }
@@ -1065,16 +1060,15 @@
       if (error) console.error('Insert error:', error.message);
     }
 
-    // 14. Real-Time Dynamic K-Factor Calibration
-    function updateKFactor() {
+    // 14. Real-Time Dynamic Calibration Update
+    function updateCalibrationConstant() {
       const input = document.getElementById('input-kfactor');
       const val = parseFloat(input.value);
 
       if (val && val > 0) {
-        K_FACTOR = val;
-        document.getElementById('kfactor-badge').textContent = `${Math.round(K_FACTOR)} p/L`;
+        PACKETS_PER_LITER = val;
+        document.getElementById('kfactor-badge').textContent = `${PACKETS_PER_LITER} pkts/L`;
 
-        // Recalculate both selected node stats/graph and total household volume
         fetchNodeTelemetry();
         fetchGlobalHouseUsage();
       }
